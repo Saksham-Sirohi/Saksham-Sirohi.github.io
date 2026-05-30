@@ -1,1 +1,744 @@
-hi i am live
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Saksham Sirohi — Software Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --white: #ffffff;
+    --black: #0a0a0a;
+    --gray-50: #fafafa;
+    --gray-100: #f4f4f4;
+    --gray-200: #e8e8e8;
+    --gray-400: #a0a0a0;
+    --gray-600: #606060;
+    --gray-800: #282828;
+    --accent: #1a1a2e;
+    --accent-2: #16213e;
+    --teal: #0d7c66;
+    --teal-light: #e6f7f4;
+    --mono: 'DM Mono', monospace;
+    --serif: 'DM Serif Display', serif;
+    --sans: 'Outfit', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--white);
+    color: var(--black);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5vw; height: 64px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--gray-600);
+    text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray-600);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--black); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 100px 5vw 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(var(--gray-200) 1px, transparent 1px),
+      linear-gradient(90deg, var(--gray-200) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.5;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 900px; }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono);
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 0.1em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: block; width: 28px; height: 1px;
+    background: var(--teal);
+  }
+  h1.hero-name {
+    font-family: var(--serif);
+    font-size: clamp(3.5rem, 8vw, 7rem);
+    font-weight: 400;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--black);
+    margin-bottom: 1.5rem;
+  }
+  h1.hero-name em {
+    font-style: italic;
+    color: var(--gray-600);
+  }
+  .hero-desc {
+    font-size: 1.125rem;
+    font-weight: 300;
+    color: var(--gray-600);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+  .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px;
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary {
+    background: var(--black); color: var(--white);
+  }
+  .btn-primary:hover { background: var(--gray-800); }
+  .btn-outline {
+    background: transparent; color: var(--black);
+    border: 1px solid var(--gray-200);
+  }
+  .btn-outline:hover { border-color: var(--black); }
+  .hero-scroll {
+    position: absolute; bottom: 2rem; left: 5vw;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px;
+    color: var(--gray-400); letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .hero-scroll::after {
+    content: '';
+    display: block; width: 40px; height: 1px;
+    background: var(--gray-400);
+  }
+
+  /* ── SECTION COMMONS ── */
+  section { padding: 100px 5vw; }
+  .section-label {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--gray-400); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 3rem;
+  }
+  .section-label::before {
+    content: attr(data-num);
+    font-size: 10px; color: var(--gray-400);
+  }
+  h2.section-title {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 3rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── ABOUT ── */
+  .about { background: var(--gray-50); }
+  .about-inner {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+    max-width: 1200px;
+  }
+  .about-text p {
+    font-size: 1.05rem; font-weight: 300;
+    color: var(--gray-600); line-height: 1.8; margin-bottom: 1.25rem;
+  }
+  .about-text p strong { font-weight: 500; color: var(--black); }
+  .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .skill-tag {
+    font-family: var(--mono); font-size: 12px; font-weight: 400;
+    padding: 8px 14px;
+    border: 1px solid var(--gray-200);
+    color: var(--gray-600);
+    background: var(--white);
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+  }
+  .skill-tag:hover { border-color: var(--black); color: var(--black); }
+
+  /* ── EXPERIENCE ── */
+  .experience { background: var(--white); }
+  .exp-list { max-width: 900px; }
+  .exp-item {
+    display: grid; grid-template-columns: 200px 1fr;
+    gap: 40px; padding: 2.5rem 0;
+    border-top: 1px solid var(--gray-200);
+    position: relative;
+  }
+  .exp-item:last-child { border-bottom: 1px solid var(--gray-200); }
+  .exp-meta { position: sticky; top: 80px; align-self: start; }
+  .exp-org {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    color: var(--teal); letter-spacing: 0.04em;
+    text-transform: uppercase; margin-bottom: 0.4rem;
+  }
+  .exp-date {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--gray-400); letter-spacing: 0.04em;
+  }
+  .exp-role {
+    font-family: var(--serif); font-size: 1.5rem;
+    font-weight: 400; margin-bottom: 1rem; color: var(--black);
+  }
+  .exp-bullets { list-style: none; }
+  .exp-bullets li {
+    font-size: 0.925rem; font-weight: 300;
+    color: var(--gray-600); line-height: 1.7;
+    margin-bottom: 0.6rem; padding-left: 1rem;
+    border-left: 1px solid var(--gray-200); margin-left: 0;
+  }
+  .exp-bullets li strong { color: var(--black); font-weight: 500; }
+
+  /* ── PROJECTS ── */
+  .projects { background: var(--gray-50); }
+  .projects-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1px; background: var(--gray-200); max-width: 1200px;
+  }
+  .project-card {
+    background: var(--white); padding: 2rem;
+    transition: background 0.2s;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .project-card:hover { background: var(--gray-50); }
+  .project-num {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--gray-400); letter-spacing: 0.08em;
+  }
+  .project-name {
+    font-family: var(--serif); font-size: 1.35rem;
+    font-weight: 400; color: var(--black); line-height: 1.2;
+  }
+  .project-desc {
+    font-size: 0.9rem; font-weight: 300;
+    color: var(--gray-600); line-height: 1.65; flex: 1;
+  }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .project-tag {
+    font-family: var(--mono); font-size: 11px;
+    padding: 4px 10px; background: var(--gray-100);
+    color: var(--gray-600); letter-spacing: 0.02em;
+  }
+
+  /* ── GITHUB GRAPH ── */
+  .github-section { background: var(--white); }
+  .github-inner { max-width: 1000px; }
+  .github-graph-wrap {
+    border: 1px solid var(--gray-200); padding: 1.5rem;
+    background: var(--gray-50); overflow-x: auto;
+  }
+  .github-graph-wrap img { display: block; width: 100%; max-width: 100%; }
+  .github-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--gray-200); margin-top: 1px;
+  }
+  .github-stat {
+    background: var(--white); padding: 1.5rem;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .github-stat-num {
+    font-family: var(--serif); font-size: 2rem;
+    font-weight: 400; color: var(--black);
+  }
+  .github-stat-label {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--gray-400); letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  /* ── EDUCATION & CERTS ── */
+  .education { background: var(--gray-50); }
+  .edu-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 40px; max-width: 1000px;
+  }
+  .edu-card {
+    padding: 2rem; background: var(--white);
+    border: 1px solid var(--gray-200);
+  }
+  .edu-degree {
+    font-family: var(--serif); font-size: 1.2rem;
+    margin-bottom: 0.5rem; color: var(--black);
+  }
+  .edu-school {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--teal); letter-spacing: 0.04em;
+    text-transform: uppercase; margin-bottom: 0.3rem;
+  }
+  .edu-year {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--gray-400); letter-spacing: 0.04em;
+  }
+  .cert-item {
+    padding: 1.25rem 0; border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: flex-start; gap: 1rem;
+  }
+  .cert-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--teal); margin-top: 7px; flex-shrink: 0;
+  }
+  .cert-name { font-size: 0.95rem; font-weight: 400; color: var(--black); }
+  .cert-issuer { font-family: var(--mono); font-size: 11px; color: var(--gray-400); }
+
+  /* ── FOOTER / CONTACT ── */
+  footer {
+    padding: 80px 5vw;
+    border-top: 1px solid var(--gray-200);
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 2rem;
+  }
+  .footer-left h2 {
+    font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 400; line-height: 1.05; color: var(--black); margin-bottom: 1.5rem;
+  }
+  .contact-links { display: flex; flex-wrap: wrap; gap: 12px; }
+  .contact-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 12px;
+    color: var(--gray-600); text-decoration: none;
+    padding: 10px 16px; border: 1px solid var(--gray-200);
+    transition: all 0.2s; letter-spacing: 0.02em;
+  }
+  .contact-link:hover { border-color: var(--black); color: var(--black); }
+  .footer-right {
+    font-family: var(--mono); font-size: 11px;
+    color: var(--gray-400); letter-spacing: 0.04em;
+    text-align: right;
+  }
+
+  /* ── ANIMATIONS ── */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .about-inner { grid-template-columns: 1fr; gap: 40px; }
+    .exp-item { grid-template-columns: 1fr; gap: 12px; }
+    .exp-meta { position: static; }
+    .edu-grid { grid-template-columns: 1fr; }
+    .github-stats { grid-template-columns: 1fr 1fr; }
+    footer { flex-direction: column; align-items: flex-start; }
+    .footer-right { text-align: left; }
+    nav .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">SS — 2026</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#github">GitHub</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Software Engineer</div>
+    <h1 class="hero-name">Saksham<br /><em>Sirohi</em></h1>
+    <p class="hero-desc">
+      Open source engineer with a depth in full-stack architecture, LLM systems, and real-time platform infrastructure — currently at Google Summer of Code under FOSSASIA.
+    </p>
+    <div class="hero-ctas">
+      <a href="https://github.com/Saksham-Sirohi" target="_blank" class="btn btn-primary">
+        GitHub
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </a>
+      <a href="https://www.linkedin.com/in/saksham-sirohi-8553bb1ba" target="_blank" class="btn btn-outline">LinkedIn</a>
+      <a href="mailto:sakshamsirohi27@gmail.com" class="btn btn-outline">Email</a>
+    </div>
+  </div>
+  <div class="hero-scroll">Scroll to explore</div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="section-label" data-num="01 —">About</div>
+  <div class="about-inner reveal">
+    <div class="about-text">
+      <h2 class="section-title">Building things<br /><em style="font-style:italic;color:#606060;">that scale.</em></h2>
+      <p>
+        I'm a <strong>Software Developer</strong> based in Delhi, India, currently completing my B.Sc. in Data Science & Applications at IIT Madras. My work sits at the intersection of open-source infrastructure, LLM tooling, and full-stack engineering.
+      </p>
+      <p>
+        As a <strong>Google Summer of Code</strong> contributor and developer at FOSSASIA, I've shipped production features reviewed by hundreds of contributors — spanning Django backends, Vue 3 frontends, WebSocket services, and CI/CD pipelines.
+      </p>
+      <p>
+        I write clean, maintainable code and care deeply about developer experience, system reliability, and architectural decisions that pay off over time.
+      </p>
+    </div>
+    <div>
+      <p style="font-family:'DM Mono',monospace;font-size:11px;color:#a0a0a0;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1.25rem;">Core Skills</p>
+      <div class="skills-grid">
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">TypeScript</span>
+        <span class="skill-tag">Vue 3</span>
+        <span class="skill-tag">Django</span>
+        <span class="skill-tag">Flask</span>
+        <span class="skill-tag">SQL / SQLite</span>
+        <span class="skill-tag">Redis &amp; Celery</span>
+        <span class="skill-tag">Docker / CI/CD</span>
+        <span class="skill-tag">LLM / RAG</span>
+        <span class="skill-tag">WebRTC</span>
+        <span class="skill-tag">REST APIs</span>
+        <span class="skill-tag">Pandas / Scikit</span>
+        <span class="skill-tag">Tailwind CSS</span>
+        <span class="skill-tag">Pinia</span>
+        <span class="skill-tag">Git / GitHub</span>
+        <span class="skill-tag">Figma</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="experience" id="experience">
+  <div class="section-label" data-num="02 —">Experience</div>
+  <h2 class="section-title">Where I've<br /><em style="font-style:italic;color:#606060;">worked.</em></h2>
+  <div class="exp-list">
+
+    <div class="exp-item reveal">
+      <div class="exp-meta">
+        <div class="exp-org">Google Summer of Code</div>
+        <div class="exp-date">May 2026 — Present</div>
+      </div>
+      <div class="exp-body">
+        <div class="exp-role">Open Source Software Engineer</div>
+        <ul class="exp-bullets">
+          <li><strong>Flowspace Platform:</strong> Designing and building a proximity-based spatial video lounge for Eventyay from greenfield using Vue 3 + TypeScript with a headless Media Service adapter layer that fully decouples the 2D spatial canvas from lib-jitsi-meet.</li>
+          <li><strong>Real-Time Proximity Audio:</strong> Implementing per-participant audio attenuation via Web Audio API (GainNode/PannerNode) fed by raw WebRTC tracks, bypassing Jitsi IFrame API for fine-grained volume control driven by real-time coordinate distance calculations.</li>
+          <li><strong>State Architecture:</strong> Designing a Pinia-based world state store managing participant coordinates, presence, and reactive UI; integrating with Eventyay JWT auth and room configuration APIs.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item reveal">
+      <div class="exp-meta">
+        <div class="exp-org">FOSSASIA</div>
+        <div class="exp-date">Feb 2025 — Present</div>
+      </div>
+      <div class="exp-body">
+        <div class="exp-role">Open Source Software Developer</div>
+        <ul class="exp-bullets">
+          <li><strong>Schedule Platform Unification:</strong> Unified the schedule with server-preloaded payloads, eliminating redundant API calls; added recording attendee tracking, Google Calendar export, and rich search with tracks, rooms, popularity and featured speakers.</li>
+          <li><strong>Editor Infrastructure Overhaul:</strong> Migrated from Quill → TinyMCE → Toast UI markdown editor across tickets, talk, and video components; standardised fonts, favicons, and design tokens platform-wide.</li>
+          <li><strong>Code Review Leadership:</strong> Reviewed 400+ PRs across Django, Vue 3, WebSocket services, and CI/CD pipelines — covering security patches, payment flows, WebSocket race conditions, and accessibility fixes.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item reveal">
+      <div class="exp-meta">
+        <div class="exp-org">AlignBits</div>
+        <div class="exp-date">Nov 2025 — Mar 2026</div>
+      </div>
+      <div class="exp-body">
+        <div class="exp-role">Software Developer Intern</div>
+        <ul class="exp-bullets">
+          <li><strong>LLM Optimisation:</strong> Scaled output limits from ~500 to ~2,000 lines; reduced RAG token usage from 40k to under 5k; evaluated 300+ prompts across multiple agentic workflows while maintaining accuracy.</li>
+          <li><strong>Groovy Code Intelligence:</strong> Built AI-driven pipelines to detect and resolve Groovy runtime/compilation errors and recommend script optimisations.</li>
+          <li><strong>Infrastructure Reliability:</strong> Advanced internal LLM implementation with multi-mapper integrations, robust CURL parsing across edge cases, and improved logging for system visibility.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item reveal">
+      <div class="exp-meta">
+        <div class="exp-org">Google Summer of Code</div>
+        <div class="exp-date">May 2025 — Nov 2025</div>
+      </div>
+      <div class="exp-body">
+        <div class="exp-role">GSoC Contributor</div>
+        <ul class="exp-bullets">
+          <li><strong>Backend Engineering:</strong> Built end-to-end Django features including per-user ticket quotas, event filtering, hidden-room sync, and organiser creation flows; resolved critical production failures across event loops, 500 errors, and timezone handling.</li>
+          <li><strong>Full-Stack Architecture Refactor:</strong> Replaced fragile client-side Pretalx polling with server-driven schedule delivery; unified organiser/event routing across Django, Vue Router, and API layers spanning 3+ repositories.</li>
+          <li><strong>Vue 3 Migration:</strong> Migrated schedule editor, CFP workflow, and video webapp from Vue 2 to Vue 3 with TypeScript + Composition API, resolving routing regressions and maintaining full feature parity.</li>
+          <li><strong>DevOps:</strong> Improved Docker workflows, resolved WSL/macOS cross-platform issues, automated CI/CD documentation publishing, and streamlined onboarding for a large open-source platform.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section class="projects" id="projects">
+  <div class="section-label" data-num="03 —">Projects</div>
+  <h2 class="section-title">Selected<br /><em style="font-style:italic;color:#606060;">work.</em></h2>
+  <div class="projects-grid reveal">
+
+    <div class="project-card">
+      <div class="project-num">01</div>
+      <div class="project-name">AI HR Helper Application</div>
+      <div class="project-desc">Led AI module development for an 8-person Agile team. Built a GenAI Resume Parser using strict prompt engineering to extract JSON metadata and calculate a Suitability Score (0–100). Designed an Adaptive Interview System generating context-aware follow-up questions in real time.</div>
+      <div class="project-tags">
+        <span class="project-tag">LLM</span>
+        <span class="project-tag">Prompt Engineering</span>
+        <span class="project-tag">Python</span>
+        <span class="project-tag">Agile</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">02</div>
+      <div class="project-name">Bank Telemarketing Prediction</div>
+      <div class="project-desc">Built a Kaggle classification pipeline with imputation, encoding, feature engineering, SelectKBest, and PCA. Trained a stacking ensemble of 6+ models with a Logistic Regression meta-learner. Ranked top 15% (200/1,400) on the leaderboard, optimised via cross-validation and macro F1-score.</div>
+      <div class="project-tags">
+        <span class="project-tag">Scikit-learn</span>
+        <span class="project-tag">Pandas</span>
+        <span class="project-tag">ML Pipeline</span>
+        <span class="project-tag">Ensemble</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">03</div>
+      <div class="project-name">Household Services App</div>
+      <div class="project-desc">Developed a responsive web app using Flask and Vue.js to facilitate bookings across different household services. Utilised SQLite and RESTful APIs for efficient data management, with Redis and Celery for caching and task scheduling.</div>
+      <div class="project-tags">
+        <span class="project-tag">Flask</span>
+        <span class="project-tag">Vue.js</span>
+        <span class="project-tag">Redis</span>
+        <span class="project-tag">Celery</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">04</div>
+      <div class="project-name">Orbit Wars — Reinforcement Learning</div>
+      <div class="project-desc">Kaggle competition entry — revives the 2010 Planet Wars challenge with new mechanics. Built an RL agent to deploy ship swarms across a solar system simulation to outmanoeuvre opponents and claim orbital supremacy.</div>
+      <div class="project-tags">
+        <span class="project-tag">Reinforcement Learning</span>
+        <span class="project-tag">Python</span>
+        <span class="project-tag">Kaggle</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">05</div>
+      <div class="project-name">Bookstore Pricing Optimisation</div>
+      <div class="project-desc">Used Python for trend analysis, demand forecasting, and pricing optimisation of second-hand books. Presented key revenue insights through ABC analysis and Pareto charts built with Matplotlib.</div>
+      <div class="project-tags">
+        <span class="project-tag">Python</span>
+        <span class="project-tag">Matplotlib</span>
+        <span class="project-tag">Data Analysis</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">06</div>
+      <div class="project-name">Library Management System</div>
+      <div class="project-desc">Implemented real-time borrowing and renewal features, increasing circulation efficiency. Integrated Flask, SQLite, Bootstrap, and RESTful APIs to create a responsive and dynamic library interface.</div>
+      <div class="project-tags">
+        <span class="project-tag">Flask</span>
+        <span class="project-tag">SQLite</span>
+        <span class="project-tag">Bootstrap</span>
+        <span class="project-tag">REST API</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- GITHUB -->
+<section class="github-section" id="github">
+  <div class="section-label" data-num="04 —">GitHub Activity</div>
+  <div class="github-inner reveal">
+    <h2 class="section-title">Open source<br /><em style="font-style:italic;color:#606060;">contributions.</em></h2>
+
+    <div class="github-graph-wrap">
+      <img
+        src="https://ghchart.rshah.org/0d7c66/Saksham-Sirohi"
+        alt="Saksham Sirohi GitHub contributions chart"
+        loading="lazy"
+      />
+    </div>
+
+    <div class="github-stats">
+      <div class="github-stat">
+        <div class="github-stat-num">400+</div>
+        <div class="github-stat-label">PRs Reviewed</div>
+      </div>
+      <div class="github-stat">
+        <div class="github-stat-num">2×</div>
+        <div class="github-stat-label">GSoC Selected</div>
+      </div>
+      <div class="github-stat">
+        <div class="github-stat-num">3+</div>
+        <div class="github-stat-label">Repos Contributed</div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;">
+      <a href="https://github.com/Saksham-Sirohi" target="_blank" class="btn btn-outline" style="font-size:13px;">
+        View GitHub Profile
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section class="education" id="education">
+  <div class="section-label" data-num="05 —">Education &amp; Certifications</div>
+  <h2 class="section-title">Academic<br /><em style="font-style:italic;color:#606060;">background.</em></h2>
+  <div class="edu-grid reveal">
+    <div>
+      <div class="edu-card" style="margin-bottom:12px;">
+        <div class="edu-school">Indian Institute of Technology Madras</div>
+        <div class="edu-degree">B.Sc. in Data Science &amp; Applications</div>
+        <div class="edu-year">2026</div>
+      </div>
+      <div class="edu-card" style="margin-bottom:12px;">
+        <div class="edu-school">IIT Madras</div>
+        <div class="edu-degree">Diploma in Data Science</div>
+        <div class="edu-year">2025</div>
+      </div>
+      <div class="edu-card">
+        <div class="edu-school">IIT Madras</div>
+        <div class="edu-degree">Diploma in Programming</div>
+        <div class="edu-year">2025</div>
+      </div>
+    </div>
+    <div>
+      <p style="font-family:'DM Mono',monospace;font-size:11px;color:#a0a0a0;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1rem;">Certifications &amp; Awards</p>
+      <div class="cert-item">
+        <div class="cert-dot"></div>
+        <div>
+          <div class="cert-name">Best Project for Software Engineering</div>
+          <div class="cert-issuer">IIT Madras — 2025</div>
+        </div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-dot"></div>
+        <div>
+          <div class="cert-name">SQL Intermediate Certification</div>
+          <div class="cert-issuer">HackerRank</div>
+        </div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-dot"></div>
+        <div>
+          <div class="cert-name">Google UI/UX Design Professional</div>
+          <div class="cert-issuer">Google</div>
+        </div>
+      </div>
+      <div class="cert-item" style="border-bottom:none;">
+        <div class="cert-dot"></div>
+        <div>
+          <div class="cert-name">Bank Telemarketing ML — Top 15%</div>
+          <div class="cert-issuer">Kaggle / IIT Madras — 200 of 1,400</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT / FOOTER -->
+<footer id="contact">
+  <div class="footer-left">
+    <h2>Let's build<br /><em style="font-style:italic;color:#606060;">something great.</em></h2>
+    <div class="contact-links">
+      <a href="mailto:sakshamsirohi27@gmail.com" class="contact-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        sakshamsirohi27@gmail.com
+      </a>
+      <a href="https://github.com/Saksham-Sirohi" target="_blank" class="contact-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"/></svg>
+        GitHub
+      </a>
+      <a href="https://www.linkedin.com/in/saksham-sirohi-8553bb1ba" target="_blank" class="contact-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        LinkedIn
+      </a>
+    </div>
+  </div>
+  <div class="footer-right">
+    <div style="font-family:'DM Serif Display',serif;font-size:3rem;font-weight:400;color:#e8e8e8;line-height:1;margin-bottom:0.5rem;">SS</div>
+    <div>Delhi, India</div>
+    <div style="margin-top:4px;color:#c0c0c0;">© 2026 Saksham Sirohi</div>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Stagger project cards
+  document.querySelectorAll('.project-card').forEach((card, i) => {
+    card.style.transitionDelay = (i * 60) + 'ms';
+  });
+
+  // Active nav link
+  const sections = document.querySelectorAll('section[id], footer[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => {
+      if (window.scrollY >= sec.offsetTop - 100) current = sec.id;
+    });
+    navLinks.forEach(link => {
+      link.style.color = link.getAttribute('href') === '#' + current ? '#0a0a0a' : '';
+      link.style.fontWeight = link.getAttribute('href') === '#' + current ? '500' : '';
+    });
+  });
+</script>
+</body>
+</html>
