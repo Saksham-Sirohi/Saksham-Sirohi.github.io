@@ -21,13 +21,43 @@
   --text: #111110;
   --text-muted: #6b6a65;
   --text-faint: #a09f9a;
-  --teal: #0d7c66;
-  --teal-bg: #e5f4f0;
+  --teal: #234e70;
+  --teal-bg: #e8eef3;
   --mono: 'DM Mono', monospace;
   --serif: 'DM Serif Display', serif;
   --sans: 'Outfit', sans-serif;
   --nav-h: 64px;
+  --scroll-offset: calc(var(--nav-h) + 3.5rem);
   --transition: 0.22s ease;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --anim-duration: 1.05s;
+  --anim-duration-fast: 0.75s;
+  --page-pad: clamp(0.75rem, 1.25vw, 1rem);
+  --content-max: 1520px;
+  --gh-empty: #ebedf0;
+  --gh-l1: #9be9a8;
+  --gh-l2: #40c463;
+  --gh-l3: #30a14e;
+  --gh-l4: #216e39;
+}
+
+/* Shared content width — nav, sections, footer align to the same edges */
+.nav-inner,
+.hero-inner,
+.section-inner,
+.footer-inner {
+  width: min(var(--content-max), calc(100vw - 2 * var(--page-pad)));
+  margin-inline: auto;
+}
+
+@media (min-width: 1100px) {
+  .nav-inner,
+  .hero-inner,
+  .section-inner,
+  .footer-inner {
+    width: min(var(--content-max), 96vw);
+  }
 }
 
 [data-theme="dark"] {
@@ -39,11 +69,25 @@
   --text: #f0efe9;
   --text-muted: #a09f9a;
   --text-faint: #6b6a65;
-  --teal: #2dd4b0;
-  --teal-bg: #0d2d26;
+  --teal: #6a9fd8;
+  --teal-bg: rgba(106, 159, 216, 0.14);
+  --gh-empty: #161b22;
+  --gh-l1: #0e4429;
+  --gh-l2: #006d32;
+  --gh-l3: #26a641;
+  --gh-l4: #39d353;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--scroll-offset);
+}
+
+section[id],
+footer[id],
+.section-label {
+  scroll-margin-top: var(--scroll-offset);
+}
 
 body {
   font-family: var(--sans);
@@ -53,17 +97,28 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   transition: background var(--transition), color var(--transition);
+  padding-top: var(--nav-h);
 }
 
 /* ── NAV ── */
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
   height: var(--nav-h);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 5vw;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
-  transition: background var(--transition), border-color var(--transition);
+  transition: background 0.45s var(--ease-out-quart), border-color 0.45s var(--ease-out-quart),
+    box-shadow 0.45s var(--ease-out-quart), backdrop-filter 0.45s var(--ease-out-quart);
+}
+nav.nav-scrolled {
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom-color: color-mix(in srgb, var(--border) 70%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--border) 50%, transparent);
+}
+.nav-inner {
+  height: 100%;
+  display: flex; align-items: center; justify-content: space-between;
 }
 .nav-logo {
   font-family: var(--sans);
@@ -114,27 +169,79 @@ nav {
 .hamburger.open span:nth-child(2) { opacity: 0; }
 .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* Mobile nav drawer */
+/* Mobile menu */
+.mobile-backdrop {
+  position: fixed; inset: 0; z-index: 180;
+  background: rgba(17, 17, 16, 0.45);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.mobile-backdrop.open { opacity: 1; visibility: visible; }
+
 .mobile-menu {
-  display: none; position: fixed; top: var(--nav-h); left: 0; right: 0; bottom: 0;
-  background: var(--bg); z-index: 190; padding: 2rem 5vw;
-  flex-direction: column; gap: 0;
-  border-top: 1px solid var(--border);
-  overflow-y: auto;
+  position: fixed; top: var(--nav-h); right: 0; bottom: 0;
+  width: min(360px, 90vw); z-index: 190;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto; overscroll-behavior: contain;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08);
 }
-.mobile-menu.open { display: flex; }
-.mobile-menu a {
-  font-size: 1.25rem; font-weight: 400;
-  color: var(--text-muted); text-decoration: none;
-  padding: 1rem 0; border-bottom: 1px solid var(--border);
-  transition: color var(--transition);
+[data-theme="dark"] .mobile-menu { box-shadow: -8px 0 40px rgba(0, 0, 0, 0.35); }
+.mobile-menu.open { transform: translateX(0); }
+
+.mobile-menu-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 1.25rem 0.5rem;
 }
-.mobile-menu a:hover { color: var(--text); }
+.mobile-menu-label {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+.mobile-close {
+  width: 40px; height: 40px; border: 1px solid var(--border);
+  background: var(--surface); cursor: pointer; color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition); flex-shrink: 0;
+}
+.mobile-close:hover { border-color: var(--border-strong); color: var(--text); }
+.mobile-close svg { width: 16px; height: 16px; }
+
+.mobile-menu-items {
+  display: flex; flex-direction: column;
+}
+.mobile-menu-nav {
+  display: flex; flex-direction: column;
+  padding: 0.5rem 0 1.5rem;
+}
+.mobile-link {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1.1rem 1.25rem; margin: 0 0.75rem;
+  text-decoration: none; color: var(--text-muted);
+  border-radius: 2px; transition: all var(--transition);
+  border-left: 2px solid transparent;
+}
+.mobile-link:hover { color: var(--text); background: var(--bg-alt); }
+.mobile-link.active {
+  color: var(--text); background: var(--bg-alt);
+  border-left-color: var(--teal);
+}
+.mobile-link-num {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+  color: var(--text-faint); width: 1.75rem; flex-shrink: 0;
+}
+.mobile-link.active .mobile-link-num { color: var(--teal); }
+.mobile-link-text {
+  font-family: var(--serif); font-size: 1.3rem; line-height: 1.2;
+}
 
 /* ── HERO ── */
 .hero {
-  min-height: 100vh; display: flex; align-items: center;
-  padding: calc(var(--nav-h) + 60px) 5vw 80px;
+  min-height: calc(100vh - var(--nav-h)); display: flex; align-items: center; justify-content: center;
+  padding: 2.5rem 0 80px;
   position: relative; overflow: hidden;
 }
 .hero-grid-bg {
@@ -145,13 +252,18 @@ nav {
   background-size: 60px 60px;
   opacity: 0.6;
   mask-image: radial-gradient(ellipse 80% 80% at 30% 50%, black 30%, transparent 80%);
+  will-change: transform;
+  transition: transform 0.1s linear;
 }
 .hero-inner {
   position: relative; z-index: 1;
-  display: grid; grid-template-columns: 1fr min(480px, 44vw);
-  gap: 56px; align-items: center; width: 100%; max-width: 1160px;
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(2rem, 4vw, 4rem); align-items: center;
 }
-.hero-content {}
+.hero-content {
+  min-width: 0;
+  scroll-margin-top: var(--scroll-offset);
+}
 .hero-eyebrow {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--mono); font-size: 12px; font-weight: 400;
@@ -170,26 +282,29 @@ h1.hero-name {
 }
 h1.hero-name em { font-style: italic; color: var(--text-muted); }
 .hero-desc {
-  font-size: 1.05rem; font-weight: 300; color: var(--text-muted);
-  max-width: 520px; line-height: 1.8; margin-bottom: 2.5rem;
+  font-size: clamp(1rem, 1.6vw, 1.05rem); font-weight: 300; color: var(--text-muted);
+  max-width: 38rem; line-height: 1.8; margin-bottom: 2.5rem;
 }
 .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 11px 22px; font-family: var(--sans); font-size: 13px;
   font-weight: 500; text-decoration: none; border: none; cursor: pointer;
-  transition: all var(--transition); letter-spacing: 0.01em;
+  transition: opacity var(--transition), border-color var(--transition),
+    background var(--transition), transform 0.4s var(--ease-out-expo);
+  letter-spacing: 0.01em;
 }
 .btn-primary { background: var(--text); color: var(--bg); }
-.btn-primary:hover { opacity: 0.85; }
+.btn-primary:hover { opacity: 0.85; transform: scale(1.03); }
 .btn-outline {
   background: transparent; color: var(--text);
   border: 1px solid var(--border);
 }
-.btn-outline:hover { border-color: var(--border-strong); }
+.btn-outline:hover { border-color: var(--border-strong); transform: scale(1.03); }
+.btn:active { transform: scale(0.97); }
 
 /* Photo gallery */
-.photo-gallery { width: 100%; flex-shrink: 0; }
+.photo-gallery { width: 100%; min-width: 0; flex-shrink: 0; will-change: transform; }
 .hero .photo-gallery { align-self: center; }
 .gallery-viewport {
   position: relative; width: 100%; aspect-ratio: 3 / 2;
@@ -198,25 +313,30 @@ h1.hero-name em { font-style: italic; color: var(--text-muted); }
 }
 .gallery-slide {
   position: absolute; inset: 0; opacity: 0;
-  transition: opacity 0.7s ease;
+  transition: opacity 1s var(--ease-out-expo);
   pointer-events: none;
 }
 .gallery-slide.active { opacity: 1; pointer-events: auto; }
 .gallery-slide img {
   width: 100%; height: 100%; object-fit: cover; object-position: center;
-  display: block;
+  display: block; transform: scale(1.06);
+  transition: transform 7s var(--ease-out-quart);
 }
+.gallery-slide.active img { transform: scale(1); }
 .gallery-bar {
   display: flex; align-items: center; justify-content: space-between;
-  margin-top: 12px; gap: 16px;
+  margin-top: 12px; gap: 12px;
 }
-.gallery-progress {
-  flex: 1; height: 1px; background: var(--border); position: relative;
+.gallery-dots {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.gallery-progress-fill {
-  position: absolute; left: 0; top: 0; height: 100%;
-  background: var(--teal); transition: width 0.35s ease;
+.gallery-dot {
+  width: 8px; height: 8px; border-radius: 50%; border: none; padding: 0;
+  background: var(--border); cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
 }
+.gallery-dot:hover { background: var(--border-strong); }
+.gallery-dot.active { background: var(--teal); transform: scale(1.15); }
 .gallery-meta {
   font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
   color: var(--text-faint); white-space: nowrap;
@@ -248,8 +368,7 @@ h1.hero-name em { font-style: italic; color: var(--text-muted); }
 .gallery-thumb.active { opacity: 1; outline-color: var(--teal); }
 
 /* ── SECTION COMMONS ── */
-section { padding: 100px 5vw; }
-.section-inner { max-width: 1100px; }
+section { padding: clamp(4rem, 8vw, 6.25rem) 0; }
 .section-label {
   display: inline-flex; align-items: center; gap: 10px;
   font-family: var(--mono); font-size: 11px; font-weight: 500;
@@ -267,7 +386,8 @@ h2.section-title {
 /* ── ABOUT ── */
 .about { background: var(--bg-alt); }
 .about-inner {
-  display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 80px; align-items: start;
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(2.5rem, 5vw, 5rem); align-items: start;
 }
 .about-text p {
   font-size: 1rem; font-weight: 300; color: var(--text-muted);
@@ -283,18 +403,21 @@ h2.section-title {
   font-family: var(--mono); font-size: 12px; font-weight: 400;
   padding: 8px 14px; border: 1px solid var(--border);
   color: var(--text-muted); background: var(--surface);
-  letter-spacing: 0.02em; transition: all var(--transition);
+  letter-spacing: 0.02em;
+  transition: transform 0.4s var(--ease-out-expo), border-color var(--transition), color var(--transition), background var(--transition);
 }
-.skill-tag:hover { border-color: var(--border-strong); color: var(--text); }
+.skill-tag:hover { border-color: var(--border-strong); color: var(--text); transform: translateY(-2px); }
 
 /* ── EXPERIENCE ── */
 .experience { background: var(--bg); }
-.exp-list { max-width: 920px; }
+.exp-list { width: 100%; }
 .exp-item {
   display: grid; grid-template-columns: 200px 1fr;
   gap: 40px; padding: 2.5rem 0;
   border-top: 1px solid var(--border);
+  transition: transform 0.5s var(--ease-out-expo);
 }
+.exp-item.visible:hover { transform: translateX(4px); }
 .exp-item:last-child { border-bottom: 1px solid var(--border); }
 .exp-meta { position: sticky; top: calc(var(--nav-h) + 16px); align-self: start; }
 .exp-org {
@@ -321,15 +444,15 @@ h2.section-title {
 /* ── PROJECTS ── */
 .projects { background: var(--bg-alt); }
 .projects-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1px; background: var(--border); max-width: 1100px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px; background: var(--border); width: 100%;
 }
 .project-card {
   background: var(--surface); padding: 1.75rem 2rem;
   display: flex; flex-direction: column; gap: 0.9rem;
-  transition: background var(--transition);
+  transition: background var(--transition), transform 0.55s var(--ease-out-expo);
 }
-.project-card:hover { background: var(--bg); }
+.project-card:hover { background: var(--bg); transform: translateY(-5px); }
 .project-num {
   font-family: var(--mono); font-size: 11px;
   color: var(--text-faint); letter-spacing: 0.08em;
@@ -352,12 +475,141 @@ h2.section-title {
 
 /* ── GITHUB ── */
 .github-section { background: var(--bg); }
-.github-inner { max-width: 1000px; }
+.github-inner { width: 100%; }
 .github-graph-wrap {
-  border: 1px solid var(--border); padding: 1.5rem;
-  background: var(--bg-alt); overflow-x: auto; margin-bottom: 1px;
+  border: 1px solid var(--border); padding: 1.25rem 1.5rem;
+  background: var(--surface); overflow-x: auto; margin-bottom: 1px;
 }
-.github-graph-wrap img { display: block; width: 100%; max-width: 100%; min-width: 540px; }
+.gh-cal-shell {
+  display: flex; align-items: flex-start; gap: 16px;
+  width: 100%;
+}
+.github-calendar {
+  position: relative; flex: 1 1 auto; min-width: 0;
+}
+.github-calendar-graph { width: max-content; max-width: 100%; }
+.gh-cal-sidebar {
+  flex: 0 0 auto; display: flex; flex-direction: column;
+  align-items: flex-end; gap: 8px;
+  padding-top: 2.35rem; margin-left: auto;
+}
+.gh-cal-sidebar-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  color: var(--text-faint); letter-spacing: 0.1em;
+  text-transform: uppercase; text-align: right;
+}
+.gh-cal-year-select {
+  appearance: none; -webkit-appearance: none;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--text); background-color: var(--surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236b6a65' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  border: 1px solid var(--border); border-radius: 0;
+  padding: 6px 26px 6px 10px; cursor: pointer;
+  transition: border-color var(--transition), color var(--transition);
+  min-width: 7.25rem; text-align: right; text-align-last: right;
+}
+[data-theme="dark"] .gh-cal-year-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23a09f9a' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+.gh-cal-year-select:hover { border-color: var(--border-strong); }
+.gh-cal-year-select:focus { outline: none; border-color: var(--teal); }
+.gh-cal-github-btn {
+  display: none; align-items: center; justify-content: center; gap: 6px;
+  padding: 6px 12px; font-family: var(--sans); font-size: 11px;
+  font-weight: 500; letter-spacing: 0.02em;
+  text-decoration: none; white-space: nowrap;
+  color: var(--bg); background: var(--text);
+  border: 1px solid var(--text); border-radius: 0;
+  transition: opacity var(--transition);
+}
+.gh-cal-github-btn:hover { opacity: 0.82; }
+.gh-cal-github-btn svg { flex-shrink: 0; }
+.gh-cal-github-btn.visible { display: inline-flex; }
+.github-calendar-loading {
+  font-family: var(--mono); font-size: 12px; color: var(--text-faint);
+  padding: 2rem 0; text-align: center;
+}
+.github-calendar-error {
+  font-family: var(--mono); font-size: 12px; color: #c0392b;
+  padding: 1rem 0;
+}
+.gh-cal-summary {
+  font-size: 0.875rem; font-weight: 400; color: var(--text-muted);
+  margin-bottom: 0.75rem; line-height: 1.4;
+}
+.gh-cal-summary strong { color: var(--text); font-weight: 600; }
+.gh-cal-layout { display: flex; gap: 8px; align-items: flex-start; }
+.gh-cal-day-labels {
+  width: 14px; flex-shrink: 0;
+  display: grid; grid-template-rows: repeat(7, 11px); gap: 3px;
+  padding-top: 22px; font-family: var(--mono); font-size: 9px;
+  color: var(--text-faint); line-height: 11px;
+}
+.gh-cal-day-labels span { visibility: hidden; }
+.gh-cal-day-labels span:nth-child(2),
+.gh-cal-day-labels span:nth-child(4),
+.gh-cal-day-labels span:nth-child(6) { visibility: visible; }
+.gh-cal-main { flex: 0 0 auto; width: max-content; }
+.gh-cal-months {
+  display: flex; gap: 3px; height: 16px; margin-bottom: 6px;
+  font-family: var(--mono); font-size: 9px; color: var(--text-faint);
+}
+.gh-cal-month { flex: 0 0 11px; width: 11px; overflow: visible; white-space: nowrap; }
+.gh-cal-grid {
+  display: flex; gap: 3px; width: max-content;
+}
+.gh-cal-week {
+  display: grid; grid-template-rows: repeat(7, 11px); gap: 3px;
+}
+.gh-cal-cell {
+  width: 11px; height: 11px; border-radius: 2px;
+  background: var(--gh-empty); cursor: pointer;
+  outline: none; border: 1px solid transparent;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.gh-cal-cell:hover,
+.gh-cal-cell:focus-visible {
+  border-color: var(--text-faint);
+  transform: scale(1.15);
+}
+.gh-cal-cell[data-level="1"] { background: var(--gh-l1); }
+.gh-cal-cell[data-level="2"] { background: var(--gh-l2); }
+.gh-cal-cell[data-level="3"] { background: var(--gh-l3); }
+.gh-cal-cell[data-level="4"] { background: var(--gh-l4); }
+.gh-cal-cell--future {
+  visibility: hidden; pointer-events: none; cursor: default;
+}
+.gh-cal-cell--future:hover,
+.gh-cal-cell--future:focus-visible { transform: none; border-color: transparent; }
+.gh-cal-cell--outside {
+  cursor: default; pointer-events: none;
+}
+.gh-cal-cell--outside:hover,
+.gh-cal-cell--outside:focus-visible { transform: none; border-color: transparent; }
+.gh-cal-footer {
+  display: flex; justify-content: flex-end;
+  margin-top: 10px; padding-left: 22px;
+}
+.gh-cal-legend {
+  display: flex; align-items: center; gap: 3px;
+  font-family: var(--mono); font-size: 9px; color: var(--text-faint);
+}
+.gh-cal-legend-cell {
+  width: 11px; height: 11px; border-radius: 2px;
+}
+.gh-cal-tooltip {
+  position: fixed; z-index: 300; pointer-events: none;
+  padding: 8px 10px; border-radius: 6px;
+  background: #24292f; color: #fff;
+  font-family: var(--mono); font-size: 11px; line-height: 1.4;
+  white-space: nowrap; opacity: 0; visibility: hidden;
+  transition: opacity 0.12s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.gh-cal-tooltip.visible { opacity: 1; visibility: visible; }
+[data-theme="dark"] .gh-cal-tooltip { background: #f0f6fc; color: #24292f; }
+
 .github-stats {
   display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 1px; background: var(--border);
@@ -369,6 +621,7 @@ h2.section-title {
 .github-stat-num {
   font-family: var(--serif); font-size: 2rem;
   font-weight: 400; color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 .github-stat-label {
   font-family: var(--mono); font-size: 11px;
@@ -378,7 +631,10 @@ h2.section-title {
 
 /* ── EDUCATION ── */
 .education { background: var(--bg-alt); }
-.edu-outer { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; max-width: 1100px; }
+.edu-outer {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 4vw, 3.75rem); width: 100%;
+}
 .edu-block-title {
   font-family: var(--mono); font-size: 11px; color: var(--text-faint);
   letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.25rem;
@@ -418,10 +674,13 @@ h2.section-title {
 
 /* ── FOOTER ── */
 footer {
-  padding: 80px 5vw;
+  padding: clamp(3rem, 6vw, 5rem) 0;
   border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.footer-inner {
   display: flex; align-items: flex-end; justify-content: space-between;
-  flex-wrap: wrap; gap: 2rem; background: var(--bg);
+  flex-wrap: wrap; gap: 2rem;
 }
 .footer-left h2 {
   font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.25rem);
@@ -447,29 +706,142 @@ footer {
 }
 
 /* ── ANIMATIONS ── */
-.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
-.reveal.visible { opacity: 1; transform: none; }
+.reveal {
+  opacity: 0;
+  transform: translateY(44px);
+  filter: blur(10px);
+  transition:
+    opacity var(--anim-duration) var(--ease-out-expo),
+    transform var(--anim-duration) var(--ease-out-expo),
+    filter var(--anim-duration) var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform, filter;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+.reveal-left {
+  transform: translateX(-48px) translateY(12px);
+}
+.reveal-left.visible { transform: none; }
+.reveal-right {
+  transform: translateX(48px) translateY(12px);
+}
+.reveal-right.visible { transform: none; }
+.reveal-scale {
+  transform: translateY(36px) scale(0.94);
+}
+.reveal-scale.visible { transform: none; }
+.reveal-fade {
+  transform: none;
+  filter: none;
+}
+.reveal-fade.visible { transform: none; }
+
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(32px);
+  filter: blur(6px);
+  transition:
+    opacity var(--anim-duration) var(--ease-out-expo),
+    transform var(--anim-duration) var(--ease-out-expo),
+    filter var(--anim-duration-fast) var(--ease-out-expo);
+  transition-delay: calc(var(--stagger-i, 0) * 75ms);
+}
+.stagger-children.visible > *,
+.reveal.visible .stagger-children > * {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+}
+
+.hero-animate {
+  opacity: 0;
+  transform: translateY(40px);
+  filter: blur(12px);
+  animation: heroEnter var(--anim-duration) var(--ease-out-expo) forwards;
+  animation-delay: calc(120ms + var(--hero-delay, 0) * 85ms);
+}
+@keyframes heroEnter {
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-left, .reveal-right, .reveal-scale, .reveal-fade,
+  .stagger-children > *, .hero-animate {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  .gallery-slide img { transform: none !important; transition: none !important; }
+  .btn:hover, .btn:active, .project-card:hover, .skill-tag:hover, .exp-item.visible:hover {
+    transform: none !important;
+  }
+  nav.nav-scrolled { backdrop-filter: none; }
+}
 
 /* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .projects-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 @media (max-width: 900px) {
-  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
-  .hero .photo-gallery { max-width: 560px; margin: 0 auto; width: 100%; }
-  .about-inner { grid-template-columns: 1fr; gap: 40px; }
-  .gallery-thumbs { grid-template-columns: repeat(5, 1fr); gap: 4px; }
-  .edu-outer { grid-template-columns: 1fr; }
+  .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .hero-desc { max-width: none; }
+  .hero .photo-gallery { width: 100%; max-width: none; margin: 0; }
+  .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .edu-outer { grid-template-columns: 1fr; gap: 2.5rem; }
   .github-stats { grid-template-columns: repeat(2, 1fr); }
   .footer-right { text-align: left; }
 }
+
 @media (max-width: 768px) {
+  body.menu-open nav { border-bottom-color: transparent; }
+  .hero {
+    align-items: flex-start;
+    justify-content: flex-start;
+    min-height: auto;
+    padding-top: 1.5rem;
+    padding-bottom: 3rem;
+  }
   .nav-links { display: none !important; }
+  .nav-right { gap: 10px; }
   .hamburger { display: flex; }
   .exp-item { grid-template-columns: 1fr; gap: 8px; }
   .exp-meta { position: static; }
-  footer { flex-direction: column; align-items: flex-start; }
+  .projects-grid { grid-template-columns: 1fr; }
+  .footer-inner { flex-direction: column; align-items: flex-start; }
 }
+
+@media (max-width: 640px) {
+  .skills-grid { grid-template-columns: 1fr; }
+  .gallery-thumbs { gap: 4px; }
+  .github-graph-wrap { padding: 1rem; }
+  .gh-cal-shell { flex-direction: column; gap: 1rem; width: 100%; }
+  .gh-cal-sidebar {
+    order: -1; flex-direction: column; align-items: flex-end;
+    padding-top: 0; margin-left: 0; width: 100%;
+  }
+  .github-calendar-graph {
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+  }
+  .gh-cal-layout { width: max-content; }
+  .gh-cal-footer { padding-left: 22px; }
+  .github-stats { grid-template-columns: 1fr 1fr; }
+}
+
 @media (max-width: 480px) {
   h1.hero-name { font-size: 3rem; }
-  section { padding: 70px 5vw; }
+  section { padding: 3.5rem 0; }
+  .hero { padding-bottom: 3.5rem; }
 }
 </style>
 </head>
@@ -477,6 +849,7 @@ footer {
 
 <!-- NAV -->
 <nav>
+  <div class="nav-inner">
   <a href="#top" class="nav-logo">Saksham Sirohi</a>
   <div class="nav-right">
     <ul class="nav-links">
@@ -491,33 +864,46 @@ footer {
       <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
       <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
     </button>
-    <button class="hamburger" id="hamburger" aria-label="Open menu">
+    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
       <span></span><span></span><span></span>
     </button>
+  </div>
   </div>
 </nav>
 
 <!-- MOBILE MENU -->
-<div class="mobile-menu" id="mobileMenu">
-  <a href="#about" onclick="closeMobile()">About</a>
-  <a href="#experience" onclick="closeMobile()">Experience</a>
-  <a href="#projects" onclick="closeMobile()">Projects</a>
-  <a href="#github" onclick="closeMobile()">GitHub</a>
-  <a href="#education" onclick="closeMobile()">Education</a>
-  <a href="#contact" onclick="closeMobile()">Contact</a>
-</div>
+<div class="mobile-backdrop" id="mobileBackdrop" aria-hidden="true"></div>
+<aside class="mobile-menu" id="mobileMenu" aria-hidden="true" aria-label="Site navigation">
+  <div class="mobile-menu-items">
+    <div class="mobile-menu-header">
+      <span class="mobile-menu-label">Navigation</span>
+      <button type="button" class="mobile-close" id="mobileClose" aria-label="Close menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <nav class="mobile-menu-nav">
+      <a href="#top" class="mobile-link"><span class="mobile-link-num">01</span><span class="mobile-link-text">Bio</span></a>
+      <a href="#about" class="mobile-link"><span class="mobile-link-num">02</span><span class="mobile-link-text">About</span></a>
+      <a href="#experience" class="mobile-link"><span class="mobile-link-num">03</span><span class="mobile-link-text">Experience</span></a>
+      <a href="#projects" class="mobile-link"><span class="mobile-link-num">04</span><span class="mobile-link-text">Projects</span></a>
+      <a href="#github" class="mobile-link"><span class="mobile-link-num">05</span><span class="mobile-link-text">GitHub</span></a>
+      <a href="#education" class="mobile-link"><span class="mobile-link-num">06</span><span class="mobile-link-text">Education</span></a>
+      <a href="#contact" class="mobile-link"><span class="mobile-link-num">07</span><span class="mobile-link-text">Contact</span></a>
+    </nav>
+  </div>
+</aside>
 
 <!-- HERO -->
 <section class="hero" id="top">
   <div class="hero-grid-bg"></div>
   <div class="hero-inner">
-    <div class="hero-content reveal">
-      <div class="hero-eyebrow">Software Engineer &amp; Open Source Contributor</div>
-      <h1 class="hero-name">Saksham<br /><em>Sirohi</em></h1>
-      <p class="hero-desc">
+    <div class="hero-content">
+      <div class="hero-eyebrow hero-animate" style="--hero-delay:0">Software Engineer &amp; Open Source Contributor</div>
+      <h1 class="hero-name hero-animate" style="--hero-delay:1">Saksham<br /><em>Sirohi</em></h1>
+      <p class="hero-desc hero-animate" style="--hero-delay:2">
         Full-stack engineer with a focus on open-source infrastructure, real-time systems, and LLM tooling. GSoC engineer at FOSSASIA — twice selected, now building spatial WebRTC platforms using Jitsi.
       </p>
-      <div class="hero-ctas">
+      <div class="hero-ctas hero-animate" style="--hero-delay:3">
         <a href="https://github.com/Saksham-Sirohi" target="_blank" class="btn btn-primary">
           GitHub
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
@@ -527,7 +913,7 @@ footer {
       </div>
     </div>
 
-    <div class="photo-gallery reveal" id="photoGallery" aria-label="Photo gallery" style="transition-delay:0.15s">
+    <div class="photo-gallery reveal reveal-right" id="photoGallery" aria-label="Photo gallery" style="--reveal-delay:400ms">
       <div class="gallery-viewport">
         <div class="gallery-slide active"><img src="photos/photo-1.jpg" alt="Saksham Sirohi" /></div>
         <div class="gallery-slide"><img src="photos/photo-2.jpg" alt="Saksham Sirohi" loading="lazy" /></div>
@@ -536,8 +922,8 @@ footer {
         <div class="gallery-slide"><img src="photos/photo-5.jpg" alt="Saksham Sirohi" loading="lazy" /></div>
       </div>
       <div class="gallery-bar">
-        <div class="gallery-progress"><div class="gallery-progress-fill" id="galleryProgress" style="width:20%"></div></div>
-        <span class="gallery-meta" id="galleryMeta">01 / 05</span>
+        <div class="gallery-dots" id="galleryDots" role="tablist" aria-label="Photo slides"></div>
+        <span class="gallery-meta" id="galleryMeta">1 / 5</span>
         <div class="gallery-nav-btns">
           <button class="gallery-btn" type="button" id="galleryPrev" aria-label="Previous photo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
@@ -557,8 +943,8 @@ footer {
   <div class="section-inner">
     <div class="section-label" data-num="01 —">About</div>
 
-    <div class="about-inner reveal">
-      <div class="about-text">
+    <div class="about-inner">
+      <div class="about-text reveal reveal-left">
         <h2 class="section-title">Engineer by craft,<br /><em style="font-style:italic;color:var(--text-muted)">open-source at heart.</em></h2>
         <p>
           I'm a <strong>Software Engineer</strong> based in Delhi, India, completing my B.Sc. in Programming &amp; Data Science at IIT Madras. My work spans full-stack architecture, real-time platform engineering, and applied ML — with a consistent throughline in open-source contribution.
@@ -570,9 +956,9 @@ footer {
           I approach problems architecturally — thinking past the immediate fix toward systems that stay reliable, readable, and maintainable at scale. Whether it's reducing RAG token usage by 87%, unifying platform-wide rendering, or designing headless media adapters — I aim to leave codebases in better shape than I found them.
         </p>
       </div>
-      <div>
+      <div class="reveal reveal-right" style="--reveal-delay:120ms">
         <p class="skills-section-label">Languages &amp; Frameworks</p>
-        <div class="skills-grid">
+        <div class="skills-grid stagger-children">
           <span class="skill-tag">Python</span>
           <span class="skill-tag">TypeScript</span>
           <span class="skill-tag">JavaScript</span>
@@ -583,7 +969,7 @@ footer {
           <span class="skill-tag">Pinia</span>
         </div>
         <p class="skills-section-label" style="margin-top:1.25rem;">Data &amp; ML</p>
-        <div class="skills-grid">
+        <div class="skills-grid stagger-children">
           <span class="skill-tag">Pandas</span>
           <span class="skill-tag">Scikit-learn</span>
           <span class="skill-tag">Matplotlib</span>
@@ -594,7 +980,7 @@ footer {
           <span class="skill-tag">PostgreSQL</span>
         </div>
         <p class="skills-section-label" style="margin-top:1.25rem;">Infrastructure &amp; Tooling</p>
-        <div class="skills-grid">
+        <div class="skills-grid stagger-children">
           <span class="skill-tag">Docker</span>
           <span class="skill-tag">CI/CD</span>
           <span class="skill-tag">Redis</span>
@@ -605,7 +991,7 @@ footer {
           <span class="skill-tag">Postman</span>
         </div>
         <p class="skills-section-label" style="margin-top:1.25rem;">Design &amp; Other</p>
-        <div class="skills-grid">
+        <div class="skills-grid stagger-children">
           <span class="skill-tag">Tailwind CSS</span>
           <span class="skill-tag">Bootstrap</span>
           <span class="skill-tag">Figma</span>
@@ -696,7 +1082,7 @@ footer {
   <div class="section-inner">
     <div class="section-label" data-num="03 —">Projects</div>
     <h2 class="section-title">Selected<br /><em style="font-style:italic;color:var(--text-muted)">work.</em></h2>
-    <div class="projects-grid reveal">
+    <div class="projects-grid stagger-children">
 
       <div class="project-card">
         <div class="project-num">01</div>
@@ -776,18 +1162,29 @@ footer {
 <section class="github-section" id="github">
   <div class="section-inner">
     <div class="section-label" data-num="04 —">Open Source Activity</div>
-    <div class="github-inner reveal">
-      <h2 class="section-title">Contributions &amp;<br /><em style="font-style:italic;color:var(--text-muted)">community.</em></h2>
+    <div class="github-inner">
+      <h2 class="section-title reveal reveal-fade">Contributions &amp;<br /><em style="font-style:italic;color:var(--text-muted)">community.</em></h2>
 
-      <div class="github-graph-wrap">
-        <img
-          id="githubChart"
-          src=""
-          alt="Saksham Sirohi GitHub contributions chart"
-        />
+      <div class="github-graph-wrap reveal reveal-scale" style="--reveal-delay:100ms">
+        <div class="gh-cal-shell">
+          <div class="github-calendar" id="githubCalendar">
+            <div class="github-calendar-loading">Loading contribution graph…</div>
+          </div>
+          <aside class="gh-cal-sidebar" id="ghCalSidebar" aria-label="Contribution year">
+            <label class="gh-cal-sidebar-label" for="ghCalYearSelect">Select year</label>
+            <select class="gh-cal-year-select" id="ghCalYearSelect" aria-label="Select year">
+              <option value="">Last 12 months</option>
+            </select>
+            <a class="gh-cal-github-btn" id="ghCalGithubLink" href="#" target="_blank" rel="noopener noreferrer">
+              View on GitHub
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          </aside>
+        </div>
+        <div class="gh-cal-tooltip" id="ghCalTooltip" role="tooltip"></div>
       </div>
 
-      <div class="github-stats">
+      <div class="github-stats stagger-children">
         <div class="github-stat">
           <div class="github-stat-num">200+</div>
           <div class="github-stat-label">PRs Merged</div>
@@ -798,11 +1195,11 @@ footer {
         </div>
         <div class="github-stat">
           <div class="github-stat-num">8+</div>
-          <div class="github-stat-label">Repos Contributed</div>
+          <div class="github-stat-label">Open-Source Repositories Contributed</div>
         </div>
         <div class="github-stat">
           <div class="github-stat-num">3+</div>
-          <div class="github-stat-label">Repos Maintained</div>
+          <div class="github-stat-label">Open-Source Repositories Maintained</div>
         </div>
       </div>
 
@@ -832,10 +1229,10 @@ footer {
   <div class="section-inner">
     <div class="section-label" data-num="05 —">Education</div>
     <h2 class="section-title">Academic<br /><em style="font-style:italic;color:var(--text-muted)">background.</em></h2>
-    <div class="edu-outer reveal">
-      <div>
+    <div class="edu-outer">
+      <div class="reveal reveal-left">
         <p class="edu-block-title">Degrees</p>
-
+        <div class="stagger-children">
         <div class="edu-degree-item">
           <div class="edu-inst">Indian Institute of Technology Madras</div>
           <div class="edu-name">B.Sc. in Data Science &amp; Programming</div>
@@ -892,10 +1289,12 @@ footer {
             <span class="edu-tag">Computational Thinking</span>
           </div>
         </div>
+        </div>
       </div>
 
-      <div>
+      <div class="reveal reveal-right" style="--reveal-delay:100ms">
         <p class="edu-block-title">Certifications &amp; Awards</p>
+        <div class="stagger-children">
         <div class="cert-item">
           <div class="cert-dot"></div>
           <div>
@@ -938,6 +1337,7 @@ footer {
             <div class="cert-issuer">Kaggle / IIT Madras · 200 of 1,400 teams</div>
           </div>
         </div>
+        </div>
       </div>
     </div>
   </div>
@@ -945,7 +1345,8 @@ footer {
 
 <!-- CONTACT / FOOTER -->
 <footer id="contact">
-  <div class="footer-left">
+  <div class="footer-inner">
+  <div class="footer-left reveal reveal-fade">
     <h2>Let's build<br /><em style="font-style:italic;color:var(--text-muted)">something great.</em></h2>
     <div class="contact-links">
       <a href="mailto:sakshamsirohi27@gmail.com" class="contact-link">
@@ -962,10 +1363,11 @@ footer {
       </a>
     </div>
   </div>
-  <div class="footer-right">
+  <div class="footer-right reveal reveal-fade" style="--reveal-delay:150ms">
     <div class="footer-monogram">Saksham<br />Sirohi</div>
     <div>Delhi, India</div>
     <div style="margin-top:4px;color:var(--text-faint)">© 2026</div>
+  </div>
   </div>
 </footer>
 
@@ -975,79 +1377,242 @@ footer {
   const toggle = document.getElementById('themeToggle');
   const saved = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', saved);
-  toggle.addEventListener('click', () => {
-    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+
+  function setTheme(next) {
     html.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
+  }
+
+  toggle.addEventListener('click', () => {
+    setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
   });
 
-  // Hamburger
+  // Mobile menu
   const ham = document.getElementById('hamburger');
   const mob = document.getElementById('mobileMenu');
-  ham.addEventListener('click', () => {
-    ham.classList.toggle('open');
-    mob.classList.toggle('open');
-    document.body.style.overflow = mob.classList.contains('open') ? 'hidden' : '';
-  });
+  const backdrop = document.getElementById('mobileBackdrop');
+  const mobileClose = document.getElementById('mobileClose');
+
+  function openMobile() {
+    ham.classList.add('open');
+    mob.classList.add('open');
+    backdrop.classList.add('open');
+    ham.setAttribute('aria-expanded', 'true');
+    ham.setAttribute('aria-label', 'Close menu');
+    mob.setAttribute('aria-hidden', 'false');
+    backdrop.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('menu-open');
+  }
+
   function closeMobile() {
     ham.classList.remove('open');
     mob.classList.remove('open');
+    backdrop.classList.remove('open');
+    ham.setAttribute('aria-expanded', 'false');
+    ham.setAttribute('aria-label', 'Open menu');
+    mob.setAttribute('aria-hidden', 'true');
+    backdrop.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    document.body.classList.remove('menu-open');
   }
 
-  // Scroll reveal
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.07 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  ham.addEventListener('click', () => {
+    mob.classList.contains('open') ? closeMobile() : openMobile();
+  });
+  backdrop.addEventListener('click', closeMobile);
+  mobileClose.addEventListener('click', closeMobile);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mob.classList.contains('open')) closeMobile();
+  });
 
-  // Active nav
-  const sections = document.querySelectorAll('section[id], footer[id]');
-  const navLinks = document.querySelectorAll('.nav-links a, .mobile-menu a');
-  window.addEventListener('scroll', () => {
-    let current = '';
-    sections.forEach(sec => { if (window.scrollY >= sec.offsetTop - 90) current = sec.id; });
+  // Scroll animations — Apple-style reveals, stagger, parallax
+  (function initAnimations() {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    document.querySelectorAll('.section-label, .section-inner > .section-title').forEach(el => {
+      el.classList.add('reveal', 'reveal-fade');
+    });
+
+    document.querySelectorAll('.stagger-children').forEach(container => {
+      [...container.children].forEach((child, i) => child.style.setProperty('--stagger-i', i));
+    });
+
+    document.querySelectorAll('.exp-list .exp-item.reveal').forEach((el, i) => {
+      el.style.setProperty('--reveal-delay', (i * 90) + 'ms');
+    });
+
+    if (reduced) {
+      document.querySelectorAll('.reveal, .stagger-children, .reveal-left, .reveal-right').forEach(el => {
+        el.classList.add('visible');
+      });
+      return;
+    }
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('visible');
+        if (entry.target.classList.contains('github-stats')) animateStatCounters(entry.target);
+        revealObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+
+    document.querySelectorAll('.reveal, .stagger-children').forEach(el => revealObserver.observe(el));
+
+    // Hero gallery — trigger after load
+    requestAnimationFrame(() => {
+      const gallery = document.querySelector('.photo-gallery.reveal');
+      if (gallery) gallery.classList.add('visible');
+    });
+
+    // Nav blur on scroll + subtle hero parallax
+    const nav = document.querySelector('nav');
+    const heroBg = document.querySelector('.hero-grid-bg');
+    const gallery = document.querySelector('.photo-gallery');
+    let scrollTicking = false;
+
+    function onScrollAnim() {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        nav.classList.toggle('nav-scrolled', y > 20);
+        if (y < window.innerHeight * 1.2) {
+          if (heroBg) heroBg.style.transform = 'translate3d(0,' + (y * 0.22) + 'px,0)';
+          if (gallery) gallery.style.transform = 'translate3d(0,' + (y * -0.06) + 'px,0)';
+        }
+        scrollTicking = false;
+      });
+    }
+    window.addEventListener('scroll', onScrollAnim, { passive: true });
+    onScrollAnim();
+
+    function animateStatCounters(container) {
+      container.querySelectorAll('.github-stat-num').forEach(el => {
+        const raw = el.textContent.trim();
+        const match = raw.match(/^(\d+)(\+?)$/);
+        if (!match) return;
+        const target = parseInt(match[1], 10);
+        const suffix = match[2] || '';
+        const duration = 1400;
+        const start = performance.now();
+        function tick(now) {
+          const t = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - t, 4);
+          el.textContent = Math.round(target * eased) + suffix;
+          if (t < 1) requestAnimationFrame(tick);
+        }
+        el.textContent = '0' + suffix;
+        requestAnimationFrame(tick);
+      });
+    }
+  })();
+
+  // Active nav + smooth scroll with offset
+  const NAV_SECTIONS = ['top', 'about', 'experience', 'projects', 'github', 'education', 'contact'];
+  const navLinks = document.querySelectorAll('.nav-links a, .mobile-link');
+
+  function getScrollOffset() {
+    const styles = getComputedStyle(document.documentElement);
+    const navH = parseFloat(styles.getPropertyValue('--nav-h')) || 64;
+    const extra = parseFloat(styles.fontSize) * 3.5 || 56;
+    return navH + extra;
+  }
+
+  function scrollToSection(id) {
+    if (id === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    const target = document.getElementById(id);
+    if (!target) return;
+    const marker = target.querySelector('.section-label') || target.querySelector('h2') || target;
+    marker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function updateActiveNav() {
+    let current = 'top';
+    const scrollPos = window.scrollY + getScrollOffset() * 0.5;
+    for (let i = NAV_SECTIONS.length - 1; i >= 0; i--) {
+      const sec = document.getElementById(NAV_SECTIONS[i]);
+      if (sec && scrollPos >= sec.offsetTop) {
+        current = NAV_SECTIONS[i];
+        break;
+      }
+    }
     navLinks.forEach(link => {
       const active = link.getAttribute('href') === '#' + current;
-      link.style.color = active ? 'var(--text)' : '';
-      link.style.fontWeight = active ? '500' : '';
+      link.classList.toggle('active', active);
+      if (link.closest('.nav-links')) {
+        link.style.color = active ? 'var(--text)' : '';
+        link.style.fontWeight = active ? '500' : '';
+      }
+    });
+  }
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+      e.preventDefault();
+      if (mob.classList.contains('open')) closeMobile();
+      scrollToSection(href.slice(1));
+      history.pushState(null, '', href);
     });
   });
+
+  document.querySelector('.nav-logo')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    scrollToSection('top');
+    history.pushState(null, '', '#top');
+  });
+
+  updateActiveNav();
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
 
   // Photo gallery
   (function () {
     const slides = [...document.querySelectorAll('#photoGallery .gallery-slide')];
     const thumbsWrap = document.getElementById('galleryThumbs');
-    const progress = document.getElementById('galleryProgress');
+    const dotsWrap = document.getElementById('galleryDots');
     const meta = document.getElementById('galleryMeta');
     let index = 0;
     let timer;
 
     slides.forEach((slide, i) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'gallery-thumb' + (i === 0 ? ' active' : '');
-      btn.setAttribute('aria-label', 'Photo ' + (i + 1));
+      const thumb = document.createElement('button');
+      thumb.type = 'button';
+      thumb.className = 'gallery-thumb' + (i === 0 ? ' active' : '');
+      thumb.setAttribute('aria-label', 'Photo ' + (i + 1));
       const img = slide.querySelector('img').cloneNode();
       img.removeAttribute('loading');
-      btn.appendChild(img);
-      btn.addEventListener('click', () => goTo(i, true));
-      thumbsWrap.appendChild(btn);
+      thumb.appendChild(img);
+      thumb.addEventListener('click', () => goTo(i, true));
+      thumbsWrap.appendChild(thumb);
+
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'gallery-dot' + (i === 0 ? ' active' : '');
+      dot.setAttribute('role', 'tab');
+      dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+      dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      dot.addEventListener('click', () => goTo(i, true));
+      dotsWrap.appendChild(dot);
     });
 
     const thumbs = [...thumbsWrap.children];
+    const dots = [...dotsWrap.children];
 
     function goTo(i, manual) {
       index = (i + slides.length) % slides.length;
       slides.forEach((s, n) => s.classList.toggle('active', n === index));
       thumbs.forEach((t, n) => t.classList.toggle('active', n === index));
-      progress.style.width = ((index + 1) / slides.length * 100) + '%';
-      meta.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+      dots.forEach((d, n) => {
+        d.classList.toggle('active', n === index);
+        d.setAttribute('aria-selected', n === index ? 'true' : 'false');
+      });
+      meta.textContent = (index + 1) + ' / ' + slides.length;
       if (manual) resetTimer();
     }
 
@@ -1063,31 +1628,279 @@ footer {
     resetTimer();
   })();
 
-  // GitHub contributions chart — refresh every 6 hours, no client cache
+  // GitHub contributions calendar — interactive, GitHub colors, refresh every 6 hours
   (function () {
-    const img = document.getElementById('githubChart');
-    const base = 'https://ghchart.rshah.org/0d7c66/Saksham-Sirohi';
+    const USERNAME = 'Saksham-Sirohi';
+    const API = 'https://github-contributions-api.jogruber.de/v4/' + USERNAME;
     const SIX_HOURS = 6 * 60 * 60 * 1000;
-    let objectUrl;
+    const container = document.getElementById('githubCalendar');
+    const yearSelect = document.getElementById('ghCalYearSelect');
+    const githubLink = document.getElementById('ghCalGithubLink');
+    const tooltip = document.getElementById('ghCalTooltip');
+    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    function bucket() { return Math.floor(Date.now() / SIX_HOURS); }
+    let cachedData = null;
+    let selectedYear = null;
 
-    async function refreshChart() {
-      const url = base + '?v=' + bucket() + '&t=' + Date.now();
-      try {
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) throw new Error('chart fetch failed');
-        const blob = await res.blob();
-        if (objectUrl) URL.revokeObjectURL(objectUrl);
-        objectUrl = URL.createObjectURL(blob);
-        img.src = objectUrl;
-      } catch {
-        img.src = url;
+    function todayStart() {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function toDateStr(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function parseDate(dateStr) {
+      const p = dateStr.split('-').map(Number);
+      return new Date(p[0], p[1] - 1, p[2]);
+    }
+
+    function formatTooltip(dateStr, count) {
+      const d = parseDate(dateStr);
+      const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+      const dateLabel = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      const noun = count === 1 ? 'contribution' : 'contributions';
+      return count + ' ' + noun + ' on ' + weekday + ', ' + dateLabel;
+    }
+
+    function getRange(year) {
+      const today = todayStart();
+      const todayStr = toDateStr(today);
+
+      if (year == null) {
+        const start = new Date(today);
+        start.setDate(start.getDate() - 364);
+        return { start, end: today, todayStr };
+      }
+
+      const start = new Date(year, 0, 1);
+      const yearEnd = new Date(year, 11, 31);
+      const end = year === today.getFullYear() && yearEnd > today ? today : yearEnd;
+      return { start, end, todayStr };
+    }
+
+    function buildWeeks(contributions, year) {
+      const byDate = new Map(contributions.map(c => [c.date, c]));
+      const { start, end, todayStr } = getRange(year);
+
+      const gridStart = new Date(start);
+      while (gridStart.getDay() !== 0) gridStart.setDate(gridStart.getDate() - 1);
+
+      const gridEnd = new Date(end);
+      while (gridEnd.getDay() !== 6) gridEnd.setDate(gridEnd.getDate() + 1);
+
+      const weeks = [];
+      const cursor = new Date(gridStart);
+
+      while (cursor <= gridEnd) {
+        const week = [];
+        for (let i = 0; i < 7; i++) {
+          const dateStr = toDateStr(cursor);
+          const inRange = cursor >= start && cursor <= end;
+          const outside = !inRange;
+          const isFuture = inRange && dateStr > todayStr;
+          const entry = byDate.get(dateStr) || { date: dateStr, count: 0, level: 0 };
+          week.push({ ...entry, inRange, outside, isFuture });
+          cursor.setDate(cursor.getDate() + 1);
+        }
+        weeks.push(week);
+      }
+      return weeks;
+    }
+
+    function monthLabels(weeks) {
+      return weeks.map(week => {
+        const col = document.createElement('div');
+        col.className = 'gh-cal-month';
+        for (const day of week) {
+          if (day.outside || day.isFuture) continue;
+          const d = parseDate(day.date);
+          if (d.getDate() === 1) {
+            col.textContent = MONTH_NAMES[d.getMonth()];
+            break;
+          }
+        }
+        return col;
+      });
+    }
+
+    function showTooltip(e, text) {
+      tooltip.textContent = text;
+      tooltip.classList.add('visible');
+      const pad = 12;
+      let x = e.clientX + pad;
+      let y = e.clientY + pad;
+      const rect = tooltip.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth - 8) x = e.clientX - rect.width - pad;
+      if (y + rect.height > window.innerHeight - 8) y = e.clientY - rect.height - pad;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+    }
+
+    function yearTotal(data, year) {
+      if (year != null) return data.total[String(year)] || 0;
+      const { start } = getRange(null);
+      const startStr = toDateStr(start);
+      return data.contributions.reduce((sum, c) => (
+        c.date >= startStr ? sum + c.count : sum
+      ), 0);
+    }
+
+    function updateGithubLink() {
+      if (selectedYear == null) {
+        githubLink.classList.remove('visible');
+        return;
+      }
+      githubLink.href = 'https://github.com/' + USERNAME + '?tab=overview&from=' + selectedYear + '-01-01&to=' + selectedYear + '-12-31';
+      githubLink.classList.add('visible');
+    }
+
+    function populateYearSelect(totals) {
+      yearSelect.innerHTML = '<option value="">Last 12 months</option>';
+      Object.keys(totals)
+        .map(Number)
+        .sort((a, b) => b - a)
+        .forEach(year => {
+          const opt = document.createElement('option');
+          opt.value = String(year);
+          opt.textContent = String(year);
+          yearSelect.appendChild(opt);
+        });
+      yearSelect.value = selectedYear == null ? '' : String(selectedYear);
+      if (yearSelect.value !== (selectedYear == null ? '' : String(selectedYear))) {
+        yearSelect.value = '';
+        selectedYear = null;
       }
     }
 
-    refreshChart();
-    setInterval(refreshChart, SIX_HOURS);
+    yearSelect.addEventListener('change', () => {
+      selectedYear = yearSelect.value ? Number(yearSelect.value) : null;
+      updateGithubLink();
+      render(cachedData);
+    });
+
+    function render(data) {
+      if (!data) return;
+      const weeks = buildWeeks(data.contributions, selectedYear);
+      const total = yearTotal(data, selectedYear);
+
+      container.innerHTML = '';
+      const graph = document.createElement('div');
+      graph.className = 'github-calendar-graph';
+
+      const summary = document.createElement('p');
+      summary.className = 'gh-cal-summary';
+      if (selectedYear == null) {
+        summary.innerHTML = '<strong>' + total.toLocaleString() + '</strong> contributions in the last year';
+      } else {
+        summary.innerHTML = '<strong>' + total.toLocaleString() + '</strong> contributions in ' + selectedYear;
+      }
+      graph.appendChild(summary);
+
+      const layout = document.createElement('div');
+      layout.className = 'gh-cal-layout';
+
+      const dayLabels = document.createElement('div');
+      dayLabels.className = 'gh-cal-day-labels';
+      DAY_NAMES.forEach(name => {
+        const span = document.createElement('span');
+        span.textContent = name;
+        dayLabels.appendChild(span);
+      });
+
+      const main = document.createElement('div');
+      main.className = 'gh-cal-main';
+
+      const monthsRow = document.createElement('div');
+      monthsRow.className = 'gh-cal-months';
+      monthLabels(weeks).forEach(el => monthsRow.appendChild(el));
+
+      const grid = document.createElement('div');
+      grid.className = 'gh-cal-grid';
+      grid.setAttribute('role', 'grid');
+      grid.setAttribute('aria-label', selectedYear == null
+        ? 'GitHub contribution calendar, last year'
+        : 'GitHub contribution calendar, ' + selectedYear);
+
+      weeks.forEach(week => {
+        const weekEl = document.createElement('div');
+        weekEl.className = 'gh-cal-week';
+        week.forEach(day => {
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          cell.className = 'gh-cal-cell';
+          cell.dataset.level = String(day.outside ? 0 : (day.level || 0));
+          if (day.isFuture) {
+            cell.classList.add('gh-cal-cell--future');
+            cell.disabled = true;
+            cell.tabIndex = -1;
+          } else if (day.outside) {
+            cell.classList.add('gh-cal-cell--outside');
+            cell.disabled = true;
+            cell.tabIndex = -1;
+          } else {
+            cell.setAttribute('aria-label', formatTooltip(day.date, day.count));
+            cell.addEventListener('mouseenter', e => showTooltip(e, formatTooltip(day.date, day.count)));
+            cell.addEventListener('mousemove', e => showTooltip(e, formatTooltip(day.date, day.count)));
+            cell.addEventListener('mouseleave', hideTooltip);
+            cell.addEventListener('focus', e => showTooltip(e, formatTooltip(day.date, day.count)));
+            cell.addEventListener('blur', hideTooltip);
+          }
+          weekEl.appendChild(cell);
+        });
+        grid.appendChild(weekEl);
+      });
+
+      main.appendChild(monthsRow);
+      main.appendChild(grid);
+      layout.appendChild(dayLabels);
+      layout.appendChild(main);
+      graph.appendChild(layout);
+
+      const footer = document.createElement('div');
+      footer.className = 'gh-cal-footer';
+      const legend = document.createElement('div');
+      legend.className = 'gh-cal-legend';
+      legend.innerHTML = '<span>Less</span>';
+      [0, 1, 2, 3, 4].forEach(level => {
+        const cell = document.createElement('span');
+        cell.className = 'gh-cal-legend-cell';
+        cell.style.background = level === 0 ? 'var(--gh-empty)' : 'var(--gh-l' + level + ')';
+        legend.appendChild(cell);
+      });
+      const more = document.createElement('span');
+      more.textContent = 'More';
+      legend.appendChild(more);
+      footer.appendChild(legend);
+      graph.appendChild(footer);
+
+      container.appendChild(graph);
+    }
+
+    async function loadCalendar() {
+      try {
+        const res = await fetch(API + '?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('fetch failed');
+        cachedData = await res.json();
+        populateYearSelect(cachedData.total);
+        updateGithubLink();
+        render(cachedData);
+      } catch {
+        container.innerHTML = '<p class="github-calendar-error">Could not load contribution graph. <a href="https://github.com/' + USERNAME + '" target="_blank" style="color:var(--teal)">View on GitHub</a></p>';
+        yearSelect.innerHTML = '<option value="">Last 12 months</option>';
+        githubLink.classList.remove('visible');
+      }
+    }
+
+    loadCalendar();
+    setInterval(loadCalendar, SIX_HOURS);
   })();
 </script>
 </body>
